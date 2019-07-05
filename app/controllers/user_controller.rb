@@ -1,7 +1,7 @@
 # TODO: secret in production doesn't exist
 class UserController < ApplicationController
   skip_before_action :auth_user, only: :login
-  before_action :auth_admin, only: [:admin_test, :index, :create, :destroy]
+  before_action :auth_admin, only: [:admin_test, :index, :destroy]
   before_action :validate_login_params, only: [:login]
 
   # ENDPOINTS
@@ -31,7 +31,6 @@ class UserController < ApplicationController
   end
 
   # POST /user requires JSON with keys [username,password]
-  # ADMIN PRIV
   # Admin user can create a user account
   def create
     temp = User.find_by_username(params[:username])

@@ -10,7 +10,7 @@ class ImageController < ApplicationController
   def index
     value = []
     Image.all.each do |image|
-      value << {uuid: image.uuid}
+      value << {uuid: image.hash}
     end
     render json: value
   end
@@ -19,7 +19,7 @@ class ImageController < ApplicationController
   # PUBLIC
   # returns an image
   def show
-    image = Image.find_by_uuid(params[:id])
+    image = Image.find_by_hash(params[:id])
     if image.nil?
       return render json: {status: "Image Doesn't exist"}, status: 400
     end
@@ -31,9 +31,9 @@ class ImageController < ApplicationController
   # upload image and returns url to view
   def create
     # Take param from user
-    image = Image.create!({file: params[:file], uuid: SecureRandom.uuid})
+    image = Image.create!({file: params[:file], hash: get_hash})
     if image.file.image?
-      render json: {status: "File Uploaded", uuid: "#{ENV["API_URL"]}/image/#{image.uuid}"}
+      render json: {status: "File Uploaded", uuid: "#{ENV["API_URL"]}/image/#{image.hash}"}
     else
       image.file.purge
       image.delete
@@ -45,7 +45,7 @@ class ImageController < ApplicationController
   # ADMIN PRIV
   # deletes image based on url id
   def destroy
-    image = Image.find_by_uuid(params[:id])
+    image = Image.find_by_hash(params[:id])
     if image.nil?
       return render json: {status: "Image Doesn't exist"}, status: 400
     end
@@ -64,13 +64,13 @@ class ImageController < ApplicationController
   end
 
   #Gets a uuid that isn't already registered with an image
-  def get_uuid
-    secure = SecureRandom.uuid
-    image = Image.find_by_uuid(secure)
+  def get_hash
+    secure = SecureRandom.hex
+    image = Image.find_by_hash(secure)
     if image.nil?
       secure
     else
-      get_uuid
+      get_hash
     end
   end
 end
